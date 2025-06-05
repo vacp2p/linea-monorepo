@@ -2,8 +2,8 @@
 pragma solidity ^0.8.19;
 
 import { Script } from "forge-std/Script.sol";
-import { ETHYieldManagerMock } from "../../../test/foundry/yield/bridge/mocks/ETHYieldManagerMock.sol";
-import { RollupMock } from "../../../test/foundry/yield/bridge/mocks/RollupMock.sol";
+import { ETHYieldManagerMock } from "../../../../test/foundry/yield/bridge/mocks/ETHYieldManagerMock.sol";
+import { RollupMock } from "../../../../test/foundry/yield/bridge/mocks/RollupMock.sol";
 
 contract DeploymentConfig is Script {
   error DeploymentConfig_InvalidDeployerAddress();
