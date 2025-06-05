@@ -26,4 +26,3 @@ contract RollupMock is IRollup {
     return messages[messages.length - 1];
   }
 }
-
