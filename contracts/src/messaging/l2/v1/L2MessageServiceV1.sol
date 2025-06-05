@@ -121,7 +121,7 @@ abstract contract L2MessageServiceV1 is
     address payable _feeRecipient,
     bytes calldata _calldata,
     uint256 _nonce
-  ) external nonReentrant distributeFees(_fee, _to, _calldata, _feeRecipient) {
+  ) public virtual nonReentrant distributeFees(_fee, _to, _calldata, _feeRecipient) {
     _requireTypeAndGeneralNotPaused(PauseType.L1_L2);
 
     bytes32 messageHash = MessageHashing._hashMessage(_from, _to, _fee, _value, _nonce, _calldata);
