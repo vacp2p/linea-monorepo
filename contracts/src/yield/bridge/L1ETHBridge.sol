@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity 0.8.19;
+pragma solidity 0.8.26;
 
 import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -41,8 +41,7 @@ contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable {
   }
 
   /**
-   * @notice Initializes the contract.
-   * @dev Disables initializers to prevent reinitialization.
+   * @notice Disables initializers to prevent reinitialization.
    */
   constructor() {
     _disableInitializers();
