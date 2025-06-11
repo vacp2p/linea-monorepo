@@ -26,9 +26,7 @@ contract L1ETHBridgeTest is Test {
     yieldManager = ETHYieldManagerMock(payable(bridge.yieldManager()));
     l2ETHBridge = bridge.l2ETHBridge();
   }
-}
 
-contract BridgeETHTest is L1ETHBridgeTest {
   function test_RevertsIfYieldManagerIsNotSet() public {
     vm.prank(deployer);
     bridge.setYieldManager(address(0));
