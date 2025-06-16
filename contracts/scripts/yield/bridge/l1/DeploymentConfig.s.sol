@@ -11,9 +11,9 @@ contract DeploymentConfig is Script {
 
   struct NetworkConfig {
     address deployer;
-    address rollup;
+    address messageService;
+    address remoteSender;
     address yieldManager;
-    address l2ETHBridge;
   }
 
   NetworkConfig public activeNetworkConfig;
@@ -32,14 +32,14 @@ contract DeploymentConfig is Script {
 
   function getOrCreateAnvilEthConfig(address _deployer) public returns (NetworkConfig memory) {
     ETHYieldManagerMock yieldManager = new ETHYieldManagerMock();
-    RollupMock rollup = new RollupMock();
+    RollupMock rollupMock = new RollupMock();
 
     return
       NetworkConfig({
         deployer: _deployer,
-        rollup: address(rollup),
-        yieldManager: address(yieldManager),
-        l2ETHBridge: makeAddr("l2ETHBridge")
+        messageService: address(rollupMock),
+        remoteSender: makeAddr("remoteSender"),
+        yieldManager: address(yieldManager)
       });
   }
 
