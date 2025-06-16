@@ -11,44 +11,59 @@ import { ETHYieldManagerMock } from "./mocks/ETHYieldManagerMock.sol";
 
 contract L1ETHBridgeTest is Test {
   L1ETHBridge bridge;
-  RollupMock rollup;
+  RollupMock messageService;
   ETHYieldManagerMock yieldManager;
 
   address deployer;
-  address l2ETHBridge;
+  address remoteSender;
   address user1 = makeAddr("user1");
   address user2 = makeAddr("user2");
 
   function setUp() public {
     DeployL1ETHBridge script = new DeployL1ETHBridge();
     (deployer, bridge) = script.run();
-    rollup = RollupMock(bridge.rollup());
+    messageService = RollupMock(address(bridge.messageService()));
     yieldManager = ETHYieldManagerMock(payable(bridge.yieldManager()));
-    l2ETHBridge = bridge.l2ETHBridge();
+    remoteSender = bridge.remoteSender();
   }
 
-  function test_RevertsIfYieldManagerIsNotSet() public {
+  function test_setYieldManagerRevertsIfZeroAddress() public {
     vm.prank(deployer);
+    vm.expectRevert("L1ETHBridge__ZeroAddressNotAllowed()");
     bridge.setYieldManager(address(0));
-
-    vm.expectRevert("L1ETHBridge__YieldManagerNotSet()");
-    bridge.bridgeETH(address(0), "");
   }
 
-  function test_RevertsIfRollupIsNotSet() public {
+  function test_setYieldManagerSetsYieldManager() public {
     vm.prank(deployer);
-    bridge.setRollup(address(0));
-
-    vm.expectRevert("L1ETHBridge__RollupAddressNotSet()");
-    bridge.bridgeETH(address(0), "");
+    address newYieldManager = makeAddr("new-yieldManager");
+    bridge.setYieldManager(newYieldManager);
+    assertEq(bridge.yieldManager(), newYieldManager);
   }
 
-  function test_RevertsIfL2ETHBridgeIsNotSet() public {
+  function test_setRemoteSenderRevertsIfZeroAddress() public {
     vm.prank(deployer);
-    bridge.setL2ETHBridge(address(0));
+    vm.expectRevert("ZeroAddressNotAllowed()");
+    bridge.setRemoteSender(address(0));
+  }
 
-    vm.expectRevert("L1ETHBridge__L2ETHBridgeNotSet()");
-    bridge.bridgeETH(address(0), "");
+  function test_setMessageServiceRevertsIfZeroAddress() public {
+    vm.prank(deployer);
+    vm.expectRevert("L1ETHBridge__ZeroAddressNotAllowed()");
+    bridge.setMessageService(address(0));
+  }
+
+  function test_setMessageServiceSetsMessageService() public {
+    vm.prank(deployer);
+    address newMessageService = makeAddr("new-messageService");
+    bridge.setMessageService(newMessageService);
+    assertEq(address(bridge.messageService()), newMessageService);
+  }
+
+  function test_setRemoteSenderSetsRemoteSender() public {
+    vm.prank(deployer);
+    address newRemoteSender = makeAddr("new-remoteSender");   
+    bridge.setRemoteSender(newRemoteSender);
+    assertEq(bridge.remoteSender(), newRemoteSender);
   }
 
   function test_RevertsIfValueIsZero() public {
@@ -73,7 +88,7 @@ contract L1ETHBridgeTest is Test {
     vm.prank(user1);
     bridge.bridgeETH{ value: 100 }(user2, "test-message");
 
-    assertEq(rollup.messagesLength(), 1);
+    assertEq(messageService.messagesLength(), 1);
 
     bytes memory expectedData = abi.encodeWithSelector(
       IL2ETHBridge.completeBridge.selector,
@@ -82,8 +97,8 @@ contract L1ETHBridgeTest is Test {
       "test-message"
     );
 
-    RollupMock.Message memory message = rollup.lastMessage();
-    assertEq(message.to, l2ETHBridge);
+    RollupMock.Message memory message = messageService.lastMessage();
+    assertEq(message.to, remoteSender);
     assertEq(message.fee, 0);
     assertEq(message.value, 0);
     assertEq(message.data, expectedData);
