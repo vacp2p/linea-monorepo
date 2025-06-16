@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.30;
 
 import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -8,7 +8,13 @@ import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/
 import { MessageServiceBase } from "../../messaging/MessageServiceBase.sol";
 import { IMessageService } from "../../messaging/interfaces/IMessageService.sol";
 
-contract L2ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable, MessageServiceBase {
+contract L2ETHBridge is
+  Initializable,
+  UUPSUpgradeable,
+  OwnableUpgradeable,
+  ReentrancyGuardUpgradeable,
+  MessageServiceBase
+{
   error L2ETHBridge__ETHTransferFailed();
 
   /**
@@ -57,7 +63,7 @@ contract L2ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, Reen
     address _to,
     uint256 _value,
     bytes memory _calldata
-  ) external nonReentrant onlyMessagingService() onlyAuthorizedRemoteSender {
+  ) external nonReentrant onlyMessagingService onlyAuthorizedRemoteSender {
     (bool success, ) = _to.call{ value: _value }(_calldata);
     if (!success) {
       revert L2ETHBridge__ETHTransferFailed();

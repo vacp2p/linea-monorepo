@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.30;
 
 library TestUtils {
   // Helper function to convert address to ascii string
@@ -44,3 +44,4 @@ library TestUtils {
     return string(hexString);
   }
 }
+

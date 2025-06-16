@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity 0.8.26;
+pragma solidity ^0.8.30;
 
 import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -7,38 +7,15 @@ import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/O
 
 import { IRollup } from "./interfaces/IRollup.sol";
 import { IL2ETHBridge } from "./interfaces/IL2ETHBridge.sol";
+import { MessageServiceBase } from "../../messaging/MessageServiceBase.sol";
+import { IMessageService } from "../../messaging/interfaces/IMessageService.sol";
 
-contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable {
+contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, MessageServiceBase {
   error L1ETHBridge__ZeroValue();
-  error L1ETHBridge__RollupAddressNotSet();
-  error L1ETHBridge__YieldManagerNotSet();
+  error L1ETHBridge__ZeroAddressNotAllowed();
   error L1ETHBridge__YieldManagerDepositFailed();
-  error L1ETHBridge__L2ETHBridgeNotSet();
 
-  address public rollup;
   address public yieldManager;
-  address public l2ETHBridge;
-
-  modifier rollupIsSet() {
-    if (rollup == address(0)) {
-      revert L1ETHBridge__RollupAddressNotSet();
-    }
-    _;
-  }
-
-  modifier yieldManagerIsSet() {
-    if (yieldManager == address(0)) {
-      revert L1ETHBridge__YieldManagerNotSet();
-    }
-    _;
-  }
-
-  modifier l2ETHBridgeIsSet() {
-    if (l2ETHBridge == address(0)) {
-      revert L1ETHBridge__L2ETHBridgeNotSet();
-    }
-    _;
-  }
 
   /**
    * @notice Disables initializers to prevent reinitialization.
@@ -50,28 +27,44 @@ contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable {
   /**
    * @notice Initializes the contract.
    * @param _initialOwner The initial owner of the contract.
-   * @param _rollup The rollup address.
+   * @param _messageService The message service address (previously rollup).
    * @param _yieldManager The yield manager address.
-   * @param _l2ETHBridge The L2ETHBridge address.
+   * @param _remoteSender The remote sender address (previously l2ETHBridge).
    */
   function initialize(
     address _initialOwner,
-    address _rollup,
-    address _yieldManager,
-    address _l2ETHBridge
+    address _messageService,
+    address _remoteSender,
+    address _yieldManager
   ) external initializer {
     _transferOwnership(_initialOwner);
-    rollup = _rollup;
+    __MessageServiceBase_init(_messageService);
+    _setRemoteSender(_remoteSender);
+
+    if (_yieldManager == address(0)) {
+      revert L1ETHBridge__ZeroAddressNotAllowed();
+    }
     yieldManager = _yieldManager;
-    l2ETHBridge = _l2ETHBridge;
   }
 
   /**
-   * @notice Sets the rollup address.
-   * @param _rollup The new rollup address.
+   * @notice Sets the message service address.
+   * @param _messageService The new message service address.
    */
-  function setRollup(address _rollup) external onlyOwner {
-    rollup = _rollup;
+  function setMessageService(address _messageService) external onlyOwner {
+    if (_messageService == address(0)) {
+      revert L1ETHBridge__ZeroAddressNotAllowed();
+    }
+
+    messageService = IMessageService(_messageService);
+  }
+
+  /**
+   * @notice Sets the remote sender address.
+   * @param _remoteSender The new remote sender address.
+   */
+  function setRemoteSender(address _remoteSender) external onlyOwner {
+    _setRemoteSender(_remoteSender);
   }
 
   /**
@@ -79,15 +72,11 @@ contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable {
    * @param _yieldManager The new yield manager address.
    */
   function setYieldManager(address _yieldManager) external onlyOwner {
-    yieldManager = _yieldManager;
-  }
+    if (_yieldManager == address(0)) {
+      revert L1ETHBridge__ZeroAddressNotAllowed();
+    }
 
-  /**
-   * @notice Sets the L2ETHBridge address.
-   * @param _l2ETHBridge The new L2ETHBridge address.
-   */
-  function setL2ETHBridge(address _l2ETHBridge) external onlyOwner {
-    l2ETHBridge = _l2ETHBridge;
+    yieldManager = _yieldManager;
   }
 
   /**
@@ -95,10 +84,7 @@ contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable {
    * @param _to The recipient address on the L2.
    * @param _calldata The calldata to be sent to the L2ETHBridge.
    */
-  function bridgeETH(
-    address _to,
-    bytes memory _calldata
-  ) external payable rollupIsSet yieldManagerIsSet l2ETHBridgeIsSet {
+  function bridgeETH(address _to, bytes memory _calldata) external payable {
     if (msg.value == 0) {
       revert L1ETHBridge__ZeroValue();
     }
@@ -109,7 +95,7 @@ contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable {
     }
 
     bytes memory data = abi.encodeWithSelector(IL2ETHBridge.completeBridge.selector, _to, msg.value, _calldata);
-    IRollup(rollup).sendMessage(l2ETHBridge, 0, data);
+    messageService.sendMessage(remoteSender, 0, data);
   }
 
   function _authorizeUpgrade(address) internal view override {

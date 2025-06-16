@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.30;
 
 contract L2MessageServiceMock {
   address public originalSender;
@@ -12,4 +12,3 @@ contract L2MessageServiceMock {
     return originalSender;
   }
 }
-
