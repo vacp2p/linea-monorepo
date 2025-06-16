@@ -27,7 +27,45 @@ contract L2ETHBridgeTest is Test {
     vm.deal(address(bridge), 100e18);
   }
 
-  function test_RevertsIfMsgSenderIsNotL2MessageService() public {
+  function test_setMessageServiceRevertsIfNotOwner() public {
+    vm.prank(nonAuthorizedSender);
+    vm.expectRevert("Ownable: caller is not the owner");
+    bridge.setMessageService(address(0));
+  }
+
+  function test_setMessageServiceRevertsIfZeroAddress() public {
+    vm.prank(deployer);
+    vm.expectRevert("L2ETHBridge__ZeroAddressNotAllowed()");
+    bridge.setMessageService(address(0));
+  }
+
+  function test_setMessageService() public {
+    address newMessageService = makeAddr("newMessageService");
+    vm.prank(deployer);
+    bridge.setMessageService(newMessageService);
+    assertEq(address(bridge.messageService()), newMessageService);
+  }
+
+  function test_setRemoteSenderRevertsIfNotOwner() public {
+    vm.prank(nonAuthorizedSender);
+    vm.expectRevert("Ownable: caller is not the owner");
+    bridge.setRemoteSender(address(0));
+  }
+
+  function test_setRemoteSenderRevertsIfZeroAddress() public {
+    vm.prank(deployer);
+    vm.expectRevert("ZeroAddressNotAllowed()");
+    bridge.setRemoteSender(address(0));
+  }
+
+  function test_setRemoteSender() public {
+    address newRemoteSender = makeAddr("newRemoteSender");
+    vm.prank(deployer);
+    bridge.setRemoteSender(newRemoteSender);
+    assertEq(bridge.remoteSender(), newRemoteSender);
+  }
+
+  function test_CompleteBridgeRevertsIfMsgSenderIsNotL2MessageService() public {
     l2MessageService.setOriginalSender(l1ETHBridge);
 
     vm.prank(nonAuthorizedSender);
@@ -35,7 +73,7 @@ contract L2ETHBridgeTest is Test {
     bridge.completeBridge(l1ETHBridge, 0, "");
   }
 
-  function test_RevertsIfRemoteSenderIsNotL1ETHBridge() public {
+  function test_CompleteBridgeRevertsIfRemoteSenderIsNotL1ETHBridge() public {
     l2MessageService.setOriginalSender(nonAuthorizedSender);
 
     vm.prank(address(l2MessageService));

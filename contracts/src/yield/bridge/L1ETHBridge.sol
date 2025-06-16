@@ -5,17 +5,34 @@ import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/I
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-import { IRollup } from "./interfaces/IRollup.sol";
+import { IL1ETHBridge } from "./interfaces/IL1ETHBridge.sol";
 import { IL2ETHBridge } from "./interfaces/IL2ETHBridge.sol";
 import { MessageServiceBase } from "../../messaging/MessageServiceBase.sol";
 import { IMessageService } from "../../messaging/interfaces/IMessageService.sol";
 
-contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, MessageServiceBase {
-  error L1ETHBridge__ZeroValue();
-  error L1ETHBridge__ZeroAddressNotAllowed();
-  error L1ETHBridge__YieldManagerDepositFailed();
-
+contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpgradeable, MessageServiceBase {
+  /**
+   * @notice The yield manager address.
+   */
   address public yieldManager;
+
+  /**
+   * @dev Ensures the address is not address(0).
+   * @param _addr Address to check.
+   */
+  modifier nonZeroAddress(address _addr) {
+    if (_addr == address(0)) revert L1ETHBridge__ZeroAddressNotAllowed();
+    _;
+  }
+
+  /**
+   * @dev Ensures the amount is not 0.
+   * @param _amount amount to check.
+   */
+  modifier nonZeroAmount(uint256 _amount) {
+    if (_amount == 0) revert L1ETHBridge__ZeroValueNotAllowed();
+    _;
+  }
 
   /**
    * @notice Disables initializers to prevent reinitialization.
@@ -36,14 +53,11 @@ contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, Mess
     address _messageService,
     address _remoteSender,
     address _yieldManager
-  ) external initializer {
+  ) external initializer nonZeroAddress(_yieldManager) {
     _transferOwnership(_initialOwner);
     __MessageServiceBase_init(_messageService);
     _setRemoteSender(_remoteSender);
 
-    if (_yieldManager == address(0)) {
-      revert L1ETHBridge__ZeroAddressNotAllowed();
-    }
     yieldManager = _yieldManager;
   }
 
@@ -51,11 +65,8 @@ contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, Mess
    * @notice Sets the message service address.
    * @param _messageService The new message service address.
    */
-  function setMessageService(address _messageService) external onlyOwner {
-    if (_messageService == address(0)) {
-      revert L1ETHBridge__ZeroAddressNotAllowed();
-    }
-
+  function setMessageService(address _messageService) external onlyOwner nonZeroAddress(_messageService) {
+    emit MessageServiceUpdated(_messageService, address(messageService), msg.sender);
     messageService = IMessageService(_messageService);
   }
 
@@ -71,11 +82,8 @@ contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, Mess
    * @notice Sets the yield manager address.
    * @param _yieldManager The new yield manager address.
    */
-  function setYieldManager(address _yieldManager) external onlyOwner {
-    if (_yieldManager == address(0)) {
-      revert L1ETHBridge__ZeroAddressNotAllowed();
-    }
-
+  function setYieldManager(address _yieldManager) external onlyOwner nonZeroAddress(_yieldManager) {
+    emit YieldManagerUpdated(_yieldManager, yieldManager, msg.sender);
     yieldManager = _yieldManager;
   }
 
@@ -87,11 +95,7 @@ contract L1ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, Mess
   function bridgeETH(
     address _to,
     bytes memory _calldata
-  ) external payable {
-    if (msg.value == 0) {
-      revert L1ETHBridge__ZeroValue();
-    }
-
+  ) external payable nonZeroAmount(msg.value) nonZeroAddress(_to) {
     (bool success, ) = yieldManager.call{ value: msg.value }("");
     if (!success) {
       revert L1ETHBridge__YieldManagerDepositFailed();

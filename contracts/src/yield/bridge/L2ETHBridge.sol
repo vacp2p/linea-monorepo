@@ -5,11 +5,20 @@ import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/I
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import { IL2ETHBridge } from "./interfaces/IL2ETHBridge.sol";
 import { MessageServiceBase } from "../../messaging/MessageServiceBase.sol";
 import { IMessageService } from "../../messaging/interfaces/IMessageService.sol";
 
-contract L2ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable, MessageServiceBase {
-  error L2ETHBridge__ETHTransferFailed();
+contract L2ETHBridge is IL2ETHBridge, Initializable, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable, MessageServiceBase {
+
+  /**
+   * @dev Ensures the address is not address(0).
+   * @param _addr Address to check.
+   */
+  modifier nonZeroAddress(address _addr) {
+    if (_addr == address(0)) revert L2ETHBridge__ZeroAddressNotAllowed();
+    _;
+  }
 
   /**
    * @notice Disables initializers to prevent reinitialization.
@@ -35,7 +44,7 @@ contract L2ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, Reen
    * @notice Sets the remote sender address.
    * @param _remoteSender The L1ETHBridge address.
    */
-  function setRemoteSender(address _remoteSender) internal onlyOwner {
+  function setRemoteSender(address _remoteSender) external onlyOwner {
     _setRemoteSender(_remoteSender);
   }
 
@@ -43,7 +52,9 @@ contract L2ETHBridge is Initializable, UUPSUpgradeable, OwnableUpgradeable, Reen
    * @notice Sets the L2MessageService address.
    * @param _messageService The L2 MessageService address.
    */
-  function setMessageService(address _messageService) external onlyOwner {
+  function setMessageService(address _messageService) external onlyOwner nonZeroAddress(_messageService) {
+    emit MessageServiceUpdated(_messageService, address(messageService), msg.sender);
+
     messageService = IMessageService(_messageService);
   }
 

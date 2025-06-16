@@ -2,5 +2,25 @@
 pragma solidity ^0.8.26;
 
 interface IL2ETHBridge {
+  /**
+   * @notice Emitted when the message service address is set.
+   * @param newMessageService The indexed new message service address.
+   * @param oldMessageService The indexed old message service address.
+   * @param setBy The indexed address setting the new message service address.
+   */
+  event MessageServiceUpdated(
+    address indexed newMessageService,
+    address indexed oldMessageService,
+    address indexed setBy
+  );
+
+  error L2ETHBridge__ETHTransferFailed();
+
+  error L2ETHBridge__ZeroAddressNotAllowed();
+
+  function setRemoteSender(address _remoteSender) external;
+
+  function setMessageService(address _messageService) external;
+
   function completeBridge(address _to, uint256 _value, bytes calldata _calldata) external;
 }

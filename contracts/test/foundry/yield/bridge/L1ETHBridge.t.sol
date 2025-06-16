@@ -18,6 +18,7 @@ contract L1ETHBridgeTest is Test {
   address remoteSender;
   address user1 = makeAddr("user1");
   address user2 = makeAddr("user2");
+  address nonAuthorizedSender = makeAddr("nonAuthorizedSender");
 
   function setUp() public {
     DeployL1ETHBridge script = new DeployL1ETHBridge();
@@ -27,17 +28,29 @@ contract L1ETHBridgeTest is Test {
     remoteSender = bridge.remoteSender();
   }
 
+  function test_setYieldManagerRevertsIfNotOwner() public {
+    vm.prank(nonAuthorizedSender);
+    vm.expectRevert("Ownable: caller is not the owner");
+    bridge.setYieldManager(address(0));
+  }
+
   function test_setYieldManagerRevertsIfZeroAddress() public {
     vm.prank(deployer);
     vm.expectRevert("L1ETHBridge__ZeroAddressNotAllowed()");
     bridge.setYieldManager(address(0));
   }
 
-  function test_setYieldManagerSetsYieldManager() public {
+  function test_setYieldManager() public {
     vm.prank(deployer);
     address newYieldManager = makeAddr("new-yieldManager");
     bridge.setYieldManager(newYieldManager);
     assertEq(bridge.yieldManager(), newYieldManager);
+  }
+
+  function test_setRemoteSenderRevertsIfNotOwner() public {
+    vm.prank(nonAuthorizedSender);
+    vm.expectRevert("Ownable: caller is not the owner");
+    bridge.setRemoteSender(address(0));
   }
 
   function test_setRemoteSenderRevertsIfZeroAddress() public {
@@ -46,32 +59,43 @@ contract L1ETHBridgeTest is Test {
     bridge.setRemoteSender(address(0));
   }
 
+  function test_setRemoteSender() public {
+    vm.prank(deployer);
+    address newRemoteSender = makeAddr("new-remoteSender");
+    bridge.setRemoteSender(newRemoteSender);
+    assertEq(bridge.remoteSender(), newRemoteSender);
+  }
+
+  function test_setMessageServiceRevertsIfNotOwner() public {
+    vm.prank(nonAuthorizedSender);
+    vm.expectRevert("Ownable: caller is not the owner");
+    bridge.setMessageService(address(0));
+  }
+
   function test_setMessageServiceRevertsIfZeroAddress() public {
     vm.prank(deployer);
     vm.expectRevert("L1ETHBridge__ZeroAddressNotAllowed()");
     bridge.setMessageService(address(0));
   }
 
-  function test_setMessageServiceSetsMessageService() public {
+  function test_setMessageService() public {
     vm.prank(deployer);
     address newMessageService = makeAddr("new-messageService");
     bridge.setMessageService(newMessageService);
     assertEq(address(bridge.messageService()), newMessageService);
   }
 
-  function test_setRemoteSenderSetsRemoteSender() public {
-    vm.prank(deployer);
-    address newRemoteSender = makeAddr("new-remoteSender");   
-    bridge.setRemoteSender(newRemoteSender);
-    assertEq(bridge.remoteSender(), newRemoteSender);
+  function test_BridgeETHRevertsIfValueIsZero() public {
+    vm.expectRevert("L1ETHBridge__ZeroValueNotAllowed()");
+    bridge.bridgeETH(address(1), "");
   }
 
-  function test_RevertsIfValueIsZero() public {
-    vm.expectRevert("L1ETHBridge__ZeroValue()");
-    bridge.bridgeETH(address(0), "");
+  function test_BridgeETHRevertsIfToIsZeroAddress() public {
+    vm.expectRevert("L1ETHBridge__ZeroAddressNotAllowed()");
+    bridge.bridgeETH{ value: 100 }(address(0), "");
   }
 
-  function test_FundsAreForwardedToYieldManager() public {
+  function test_BridgeETHFundsAreForwardedToYieldManager() public {
     vm.deal(user1, 100);
     vm.prank(user1);
     bridge.bridgeETH{ value: 100 }(user2, "");
@@ -83,7 +107,7 @@ contract L1ETHBridgeTest is Test {
     assertEq(address(yieldManager).balance, 100);
   }
 
-  function test_MessagesAreSentToL2ETHBridge() public {
+  function test_ETHBridgeMessagesAreSentToL2ETHBridge() public {
     vm.deal(user1, 100);
     vm.prank(user1);
     bridge.bridgeETH{ value: 100 }(user2, "test-message");
