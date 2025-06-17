@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import { IMessageService } from "../../messaging/interfaces/IMessageService.sol";
 import { L1MessageService } from "../../messaging/l1/L1MessageService.sol";
-import { LineaRollup } from "../../rollup/LineaRollup.sol";
+import { LineaRollupBase } from "../../rollup/LineaRollupBase.sol";
 
-contract YieldRollup is LineaRollup {
+contract YieldRollup is LineaRollupBase {
   error YieldRollup__L1ETHBridgeNotSet();
   error YieldRollup__L2ETHBridgeNotSet();
   error YieldRollup__InvalidValue();
@@ -13,6 +13,15 @@ contract YieldRollup is LineaRollup {
 
   address public l1ETHBridge;
   address public l2ETHBridge;
+
+  /// @custom:oz-upgrades-unsafe-allow constructor
+  constructor() {
+    _disableInitializers();
+  }
+
+  function initialize(InitializationData calldata _initializationData) external initializer {
+    __LineaRollup_init(_initializationData);
+  }
 
   /**
    * @notice Sets the L1ETHBridge address.
@@ -40,7 +49,7 @@ contract YieldRollup is LineaRollup {
     address _to,
     uint256 _fee,
     bytes calldata _calldata
-  ) public payable override(IMessageService, L1MessageService) {
+  ) external payable override(L1MessageService, IMessageService) {
     if (l1ETHBridge == address(0)) {
       revert YieldRollup__L1ETHBridgeNotSet();
     }
@@ -57,6 +66,6 @@ contract YieldRollup is LineaRollup {
       revert YieldRollup__InvalidRecipient();
     }
 
-    super.sendMessage(_to, _fee, _calldata);
+    _sendMessage(_to, _fee, _calldata);
   }
 }
