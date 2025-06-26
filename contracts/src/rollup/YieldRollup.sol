@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.30;
 
-import { IMessageService } from "../../messaging/interfaces/IMessageService.sol";
-import { L1MessageService } from "../../messaging/l1/L1MessageService.sol";
-import { LineaRollupBase } from "../../rollup/LineaRollupBase.sol";
+import { IMessageService } from "../messaging/interfaces/IMessageService.sol";
+import { L1MessageService } from "../messaging/l1/L1MessageService.sol";
+import { LineaRollupBase } from "./LineaRollupBase.sol";
 
 contract YieldRollup is LineaRollupBase {
   error YieldRollup__L1ETHBridgeNotSet();
