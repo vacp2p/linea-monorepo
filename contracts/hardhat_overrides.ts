@@ -26,6 +26,9 @@ const londonOverridePaths = [
   "src/_testing/mocks/bridging/UpgradedBridgedToken.sol",
   "src/_testing/unit/messaging/TestL2MessageManager.sol",
   "src/_testing/unit/messaging/TestL2MessageService.sol",
+
+  "src/bridging/eth/L2ETHBridge.sol",
+  "src/messaging/l2/L2YieldMessageService.sol",
 ];
 
 export const overrides = Object.fromEntries(londonOverridePaths.map((path) => [path, londonOverride]));
