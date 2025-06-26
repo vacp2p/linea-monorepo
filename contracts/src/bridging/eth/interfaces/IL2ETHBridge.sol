@@ -14,9 +14,9 @@ interface IL2ETHBridge {
     address indexed setBy
   );
 
-  error L2ETHBridge__ETHTransferFailed();
-
+  error L2ETHBridge__ZeroValueNotAllowed();
   error L2ETHBridge__ZeroAddressNotAllowed();
+  error L2ETHBridge__ETHTransferFailed();
 
   function setRemoteSender(address _remoteSender) external;
 

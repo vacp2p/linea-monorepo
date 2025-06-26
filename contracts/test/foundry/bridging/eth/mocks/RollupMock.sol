@@ -11,6 +11,16 @@ contract RollupMock {
 
   Message[] public messages;
 
+  address public originalSender;
+
+  function setOriginalSender(address _originalSender) external {
+    originalSender = _originalSender;
+  }
+
+  function sender() external view returns (address) {
+    return originalSender;
+  }
+
   function sendMessage(address _to, uint256 _fee, bytes calldata _calldata) external payable {
     messages.push(Message({ to: _to, fee: _fee, value: msg.value, data: _calldata }));
   }
