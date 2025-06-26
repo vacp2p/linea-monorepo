@@ -2,9 +2,9 @@
 pragma solidity ^0.8.30;
 
 import { Test } from "forge-std/Test.sol";
-import { L1ETHBridge } from "../../../../src/yield/bridge/L1ETHBridge.sol";
+import { L1ETHBridge } from "../../../../src/bridging/eth/L1ETHBridge.sol";
 import { DeployL1ETHBridge } from "../../../../scripts/yield/bridge/l1/DeployL1ETHBridge.s.sol";
-import { IL2ETHBridge } from "../../../../src/yield/bridge/interfaces/IL2ETHBridge.sol";
+import { IL2ETHBridge } from "../../../../src/bridging/eth/interfaces/IL2ETHBridge.sol";
 
 import { RollupMock } from "./mocks/RollupMock.sol";
 import { ETHYieldManagerMock } from "./mocks/ETHYieldManagerMock.sol";

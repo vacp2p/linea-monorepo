@@ -2,7 +2,7 @@
 pragma solidity ^0.8.26;
 
 import { Script } from "forge-std/Script.sol";
-import { L2MessageServiceMock } from "../../../../test/foundry/yield/bridge/mocks/L2MessageServiceMock.sol";
+import { L2MessageServiceMock } from "../../../../test/foundry/bridging/eth/mocks/L2MessageServiceMock.sol";
 
 contract DeploymentConfig is Script {
   error DeploymentConfig_InvalidDeployerAddress();

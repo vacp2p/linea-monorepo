@@ -5,7 +5,7 @@ import { BaseScript } from "../Base.s.sol";
 import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 import { DeploymentConfig } from "./DeploymentConfig.s.sol";
-import { L1ETHBridge } from "../../../../src/yield/bridge/L1ETHBridge.sol";
+import { L1ETHBridge } from "../../../../src/bridging/eth/L1ETHBridge.sol";
 
 contract DeployL1ETHBridge is BaseScript {
   function run() public returns (address, L1ETHBridge) {

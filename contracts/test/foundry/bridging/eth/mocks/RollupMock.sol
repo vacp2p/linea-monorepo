@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import { IRollup } from "../../../../../src/yield/bridge/interfaces/IRollup.sol";
-
-contract RollupMock is IRollup {
+contract RollupMock {
   struct Message {
     address to;
     uint256 fee;
