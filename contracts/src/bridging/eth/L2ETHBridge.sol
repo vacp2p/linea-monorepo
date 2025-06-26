@@ -21,6 +21,15 @@ contract L2ETHBridge is IL2ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
   }
 
   /**
+   * @dev Ensures the amount is not 0.
+   * @param _amount amount to check.
+   */
+  modifier nonZeroAmount(uint256 _amount) {
+    if (_amount == 0) revert L2ETHBridge__ZeroValueNotAllowed();
+    _;
+  }
+
+  /**
    * @notice Disables initializers to prevent reinitialization.
    */
   constructor() {
@@ -73,6 +82,19 @@ contract L2ETHBridge is IL2ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
     if (!success) {
       revert L2ETHBridge__ETHTransferFailed();
     }
+  }
+
+  /**
+   * @notice Bridges ETH to the L1ETHBridge.
+   * @param _to The recipient address on the L1.
+   * @param _calldata The calldata to be sent to the L1ETHBridge.
+   */
+  function bridgeETH(
+    address _to,
+    bytes memory _calldata
+  ) external payable nonZeroAmount(msg.value) nonZeroAddress(_to) {
+    bytes memory data = abi.encodeWithSelector(IL2ETHBridge.completeBridge.selector, _to, msg.value, _calldata);
+    messageService.sendMessage(remoteSender, 0, data);
   }
 
   function _authorizeUpgrade(address) internal view override {

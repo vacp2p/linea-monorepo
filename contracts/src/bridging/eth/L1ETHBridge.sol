@@ -4,17 +4,36 @@ pragma solidity ^0.8.30;
 import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-
+import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import { IL1ETHBridge } from "./interfaces/IL1ETHBridge.sol";
 import { IL2ETHBridge } from "./interfaces/IL2ETHBridge.sol";
 import { MessageServiceBase } from "../../messaging/MessageServiceBase.sol";
 import { IMessageService } from "../../messaging/interfaces/IMessageService.sol";
 
-contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpgradeable, MessageServiceBase {
+contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable, MessageServiceBase {
+  /**
+   * @notice The completed message struct.
+   */
+  struct CompletedMessage {
+    address to;
+    uint256 value;
+    bytes callData;
+  }
+
   /**
    * @notice The yield manager address.
    */
   address public yieldManager;
+
+  /**
+   * @notice The next completed message id.
+   */
+  uint256 public nextCompletedMessageId;
+
+  /**
+   * @notice The completed messages.
+   */
+  mapping(uint256 => CompletedMessage) public completedMessages;  
 
   /**
    * @dev Ensures the address is not address(0).
@@ -85,6 +104,23 @@ contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
   function setYieldManager(address _yieldManager) external onlyOwner nonZeroAddress(_yieldManager) {
     emit YieldManagerUpdated(_yieldManager, yieldManager, msg.sender);
     yieldManager = _yieldManager;
+  }
+
+  /**
+   * @notice Completes the bridge. Callable only by the L1MessageService.
+   * @param _to The recipient address.
+   * @param _value The amount of ETH to transfer.
+   * @param _calldata The calldata to pass to the recipient.
+   */
+  function completeBridge(
+    address _to,
+    uint256 _value,
+    bytes memory _calldata
+  ) external nonReentrant onlyMessagingService onlyAuthorizedRemoteSender {
+    completedMessages[nextCompletedMessageId] = CompletedMessage(_to, _value, _calldata);
+    nextCompletedMessageId++;
+
+    emit MessageCompleted(nextCompletedMessageId);
   }
 
   /**

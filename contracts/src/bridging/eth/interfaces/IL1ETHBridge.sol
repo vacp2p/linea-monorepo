@@ -14,6 +14,10 @@ interface IL1ETHBridge {
     address indexed setBy
   );
 
+  event MessageCompleted(
+    uint256 indexed messageId
+  );
+
   /**
    * @notice Emitted when the yield manager address is set.
    * @param newYieldManager The indexed new yield manager address.
@@ -28,6 +32,7 @@ interface IL1ETHBridge {
 
   error L1ETHBridge__ZeroValueNotAllowed();
   error L1ETHBridge__ZeroAddressNotAllowed();
+  error L1ETHBridge__ETHTransferFailed();
   error L1ETHBridge__YieldManagerDepositFailed();
 
   function setRemoteSender(address _remoteSender) external;
@@ -37,4 +42,6 @@ interface IL1ETHBridge {
   function setYieldManager(address _yieldManager) external;
 
   function bridgeETH(address _to, bytes memory _calldata) external payable;
+
+  function completeBridge(address _to, uint256 _value, bytes calldata _calldata) external;
 }

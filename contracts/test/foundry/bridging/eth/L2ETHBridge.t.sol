@@ -6,12 +6,15 @@ import { L2ETHBridge } from "../../../../src/bridging/eth/L2ETHBridge.sol";
 import { DeployL2ETHBridge } from "../../../../scripts/yield/bridge/l2/DeployL2ETHBridge.s.sol";
 import { RecipientMock } from "./mocks/RecipientMock.sol";
 import { L2MessageServiceMock } from "./mocks/L2MessageServiceMock.sol";
+import { IL1ETHBridge } from "../../../../src/bridging/eth/interfaces/IL1ETHBridge.sol";
 
 contract L2ETHBridgeTest is Test {
   L2ETHBridge bridge;
 
   address deployer;
   address l1ETHBridge;
+  address user1 = makeAddr("user1");
+  address user2 = makeAddr("user2");
   address nonAuthorizedSender = makeAddr("nonAuthorizedSender");
   L2MessageServiceMock l2MessageService;
 
@@ -66,8 +69,6 @@ contract L2ETHBridgeTest is Test {
   }
 
   function test_CompleteBridgeRevertsIfMsgSenderIsNotL2MessageService() public {
-    l2MessageService.setOriginalSender(l1ETHBridge);
-
     vm.prank(nonAuthorizedSender);
     vm.expectRevert("CallerIsNotMessageService()");
     bridge.completeBridge(l1ETHBridge, 0, "");
@@ -78,7 +79,7 @@ contract L2ETHBridgeTest is Test {
 
     vm.prank(address(l2MessageService));
     vm.expectRevert("SenderNotAuthorized()");
-    bridge.completeBridge(nonAuthorizedSender, 0, "");
+    bridge.completeBridge(user1, 0, "");
   }
 
   function test_CompleteBridge() public {
@@ -93,5 +94,36 @@ contract L2ETHBridgeTest is Test {
 
     assertEq(recipientMock.lastCallParam(), 77);
     assertEq(address(recipientMock).balance, 100);
+  }
+
+  function test_bridgeETHRevertsIfValueIsZero() public {
+    vm.expectRevert("L2ETHBridge__ZeroValueNotAllowed()");
+    bridge.bridgeETH(address(recipientMock), "");
+  }
+
+  function test_bridgeETHRevertsIfToIsZeroAddress() public {
+    vm.expectRevert("L2ETHBridge__ZeroAddressNotAllowed()");
+    bridge.bridgeETH{value: 100}(address(0), "");
+  }
+
+  function test_ETHBridgeMessagesAreSentToL1ETHBridge() public {
+    vm.deal(user1, 100);
+    vm.prank(user1);
+    bridge.bridgeETH{ value: 100 }(user2, "test-message");
+
+    assertEq(l2MessageService.messagesLength(), 1);
+
+    bytes memory expectedData = abi.encodeWithSelector(
+      IL1ETHBridge.completeBridge.selector,
+      user2,
+      100,
+      "test-message"
+    );
+
+    L2MessageServiceMock.Message memory message = l2MessageService.lastMessage();
+    assertEq(message.to, l1ETHBridge);
+    assertEq(message.fee, 0);
+    assertEq(message.value, 0);
+    assertEq(message.data, expectedData);
   }
 }

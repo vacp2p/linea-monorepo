@@ -127,4 +127,31 @@ contract L1ETHBridgeTest is Test {
     assertEq(message.value, 0);
     assertEq(message.data, expectedData);
   }
+
+  function test_CompleteBridgeRevertsIfMsgSenderIsNotL2MessageService() public {
+    vm.prank(nonAuthorizedSender);
+    vm.expectRevert("CallerIsNotMessageService()");
+    bridge.completeBridge(user1, 0, "");
+  }
+
+  function test_CompleteBridgeRevertsIfRemoteSenderIsNotL2ETHBridge() public {
+    messageService.setOriginalSender(nonAuthorizedSender);
+    vm.prank(address(messageService));
+    vm.expectRevert("SenderNotAuthorized()");
+    bridge.completeBridge(user1, 0, "");
+  }
+
+  function test_CompleteBridge() public {
+    assertEq(bridge.nextCompletedMessageId(), 0);
+    messageService.setOriginalSender(remoteSender);
+
+    vm.prank(address(messageService));
+    bridge.completeBridge(user1, 100, "test-data");
+
+    assertEq(bridge.nextCompletedMessageId(), 1);
+    (address to, uint256 value, bytes memory callData) = bridge.completedMessages(0);
+    assertEq(to, user1);
+    assertEq(value, 100);
+    assertEq(callData, "test-data");
+  }
 }
