@@ -3,12 +3,12 @@ pragma solidity ^0.8.30;
 
 import { Test } from "forge-std/Test.sol";
 import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import { ILineaRollup } from "../../../../src/rollup/interfaces/ILineaRollup.sol";
-import { IPermissionsManager } from "../../../../src/security/access/interfaces/IPermissionsManager.sol";
-import { IPauseManager } from "../../../../src/security/pausing/interfaces/IPauseManager.sol";
-import { IMessageService } from "../../../../src/messaging/interfaces/IMessageService.sol";
-import { LineaRollup } from "../../../../src/rollup/LineaRollup.sol";
-import { YieldRollup } from "../../../../src/yield/bridge/YieldRollup.sol";
+import { ILineaRollup } from "../../../src/rollup/interfaces/ILineaRollup.sol";
+import { IPermissionsManager } from "../../../src/security/access/interfaces/IPermissionsManager.sol";
+import { IPauseManager } from "../../../src/security/pausing/interfaces/IPauseManager.sol";
+import { IMessageService } from "../../../src/messaging/interfaces/IMessageService.sol";
+import { LineaRollup } from "../../../src/rollup/LineaRollup.sol";
+import { YieldRollup } from "../../../src/rollup/YieldRollup.sol";
 import { TestUtils } from "./TestUtils.sol";
 
 contract YieldRollupTest is Test {
