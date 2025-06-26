@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.30;
 
-import { L2MessageServiceBase } from "../../messaging/l2/L2MessageServiceBase.sol";
+import { L2MessageServiceBase } from "./L2MessageServiceBase.sol";
 
 contract L2YieldMessageService is L2MessageServiceBase {
   error L2YieldMessageService__InvalidValue();
