@@ -115,7 +115,7 @@ contract L1ETHBridgeTest is Test {
     assertEq(messageService.messagesLength(), 1);
 
     bytes memory expectedData = abi.encodeWithSelector(
-      IL2ETHBridge.completeBridge.selector,
+      IL2ETHBridge.completeBridging.selector,
       user2,
       100,
       "test-message"
@@ -128,25 +128,25 @@ contract L1ETHBridgeTest is Test {
     assertEq(message.data, expectedData);
   }
 
-  function test_CompleteBridgeRevertsIfMsgSenderIsNotL2MessageService() public {
+  function test_CompleteBridgingRevertsIfMsgSenderIsNotL2MessageService() public {
     vm.prank(nonAuthorizedSender);
     vm.expectRevert("CallerIsNotMessageService()");
-    bridge.completeBridge(user1, 0, "");
+    bridge.completeBridging(user1, 0, "");
   }
 
-  function test_CompleteBridgeRevertsIfRemoteSenderIsNotL2ETHBridge() public {
+  function test_CompleteBridgingRevertsIfRemoteSenderIsNotL2ETHBridge() public {
     messageService.setOriginalSender(nonAuthorizedSender);
     vm.prank(address(messageService));
     vm.expectRevert("SenderNotAuthorized()");
-    bridge.completeBridge(user1, 0, "");
+    bridge.completeBridging(user1, 0, "");
   }
 
-  function test_CompleteBridge() public {
+  function test_CompleteBridging() public {
     assertEq(bridge.nextCompletedMessageId(), 0);
     messageService.setOriginalSender(remoteSender);
 
     vm.prank(address(messageService));
-    bridge.completeBridge(user1, 100, "test-data");
+    bridge.completeBridging(user1, 100, "test-data");
 
     assertEq(bridge.nextCompletedMessageId(), 1);
     (address to, uint256 value, bytes memory callData) = bridge.completedMessages(0);

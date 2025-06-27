@@ -5,6 +5,7 @@ import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/I
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import { IL1ETHBridge } from "./interfaces/IL1ETHBridge.sol";
 import { IL2ETHBridge } from "./interfaces/IL2ETHBridge.sol";
 import { MessageServiceBase } from "../../messaging/MessageServiceBase.sol";
 import { IMessageService } from "../../messaging/interfaces/IMessageService.sol";
@@ -73,7 +74,7 @@ contract L2ETHBridge is IL2ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
    * @param _value The amount of ETH to transfer.
    * @param _calldata The calldata to pass to the recipient.
    */
-  function completeBridge(
+  function completeBridging(
     address _to,
     uint256 _value,
     bytes memory _calldata
@@ -93,7 +94,7 @@ contract L2ETHBridge is IL2ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
     address _to,
     bytes memory _calldata
   ) external payable nonZeroAmount(msg.value) nonZeroAddress(_to) {
-    bytes memory data = abi.encodeWithSelector(IL2ETHBridge.completeBridge.selector, _to, msg.value, _calldata);
+    bytes memory data = abi.encodeWithSelector(IL1ETHBridge.completeBridging.selector, _to, msg.value, _calldata);
     messageService.sendMessage(remoteSender, 0, data);
   }
 
