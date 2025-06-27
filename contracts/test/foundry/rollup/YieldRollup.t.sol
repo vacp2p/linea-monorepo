@@ -17,12 +17,10 @@ contract YieldRollupTest is Test {
   address user1 = makeAddr("user1");
   address l1ETHBridge = makeAddr("l1ETHBridge");
   address l2ETHBridge = makeAddr("l2ETHBridge");
-
   address operator = makeAddr("operator");
   address defaultAdmin = makeAddr("defaultAdmin");
   address verifier = makeAddr("verifier");
   address nonAuthorizedAccount = makeAddr("nonAuthorizedAccount");
-  address securityCouncil = defaultAdmin;
   address fallbackOperator = makeAddr("fallbackOperator");
 
   bytes32 VERIFIER_SETTER_ROLE;
@@ -65,63 +63,11 @@ contract YieldRollupTest is Test {
 
     assertEq(yieldRollup.hasRole(DEFAULT_ADMIN_ROLE, defaultAdmin), true, "Default admin not set");
     assertEq(yieldRollup.hasRole(OPERATOR_ROLE, operator), true, "Operator not set");
-
-    vm.startBroadcast(defaultAdmin);
-    yieldRollup.setL1ETHBridge(l1ETHBridge);
-    yieldRollup.setL2ETHBridge(l2ETHBridge);
-    vm.stopBroadcast();
-  }
-
-  function test_RevertsIfL1ETHBridgeIsNotSet() public {
-    vm.prank(defaultAdmin);
-    yieldRollup.setL1ETHBridge(address(0));
-
-    vm.expectRevert("YieldRollup__L1ETHBridgeNotSet()");
-    yieldRollup.sendMessage(user1, 0, "");
-  }
-
-  function test_RevertsIfL2ETHBridgeIsNotSet() public {
-    vm.prank(defaultAdmin);
-    yieldRollup.setL2ETHBridge(address(0));
-
-    vm.expectRevert("YieldRollup__L2ETHBridgeNotSet()");
-    yieldRollup.sendMessage(user1, 0, "");
   }
 
   function test_RevertsIfInvalidValue() public {
     vm.expectRevert("YieldRollup__InvalidValue()");
     yieldRollup.sendMessage{ value: 1 }(user1, 0, "");
-  }
-
-  function test_RevertsIfInvalidRecipient() public {
-    vm.expectRevert("YieldRollup__InvalidRecipient()");
-    yieldRollup.sendMessage(l2ETHBridge, 0, "");
-  }
-
-  function test_OnlyAdminCanSetL1ETHBridge() public {
-    vm.prank(nonAuthorizedAccount);
-    vm.expectRevert(
-      abi.encodePacked(
-        "AccessControl: account ",
-        TestUtils._toAsciiString(nonAuthorizedAccount),
-        " is missing role ",
-        TestUtils._toHexString(DEFAULT_ADMIN_ROLE)
-      )
-    );
-    yieldRollup.setL1ETHBridge(l1ETHBridge);
-  }
-
-  function test_OnlyAdminCanSetL2ETHBridge() public {
-    vm.prank(nonAuthorizedAccount);
-    vm.expectRevert(
-      abi.encodePacked(
-        "AccessControl: account ",
-        TestUtils._toAsciiString(nonAuthorizedAccount),
-        " is missing role ",
-        TestUtils._toHexString(DEFAULT_ADMIN_ROLE)
-      )
-    );
-    yieldRollup.setL2ETHBridge(l2ETHBridge);
   }
 
   function test_SendsMessage() public {
