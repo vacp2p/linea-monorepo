@@ -149,8 +149,9 @@ contract L1ETHBridgeTest is Test {
     bridge.completeBridging(user1, 100, "test-data");
 
     assertEq(bridge.nextCompletedMessageId(), 1);
-    (uint256 withdrawalRequestId, bytes32 hash) = bridge.completedMessages(0);
+    (uint256 withdrawalRequestId, bytes32 hash, L1ETHBridge.MessageStatus status) = bridge.messages(0);
     assertEq(withdrawalRequestId, 0);
     assertEq(hash, keccak256(abi.encode(user1, 100, "test-data")));
+    assertEq(uint256(status), uint256(L1ETHBridge.MessageStatus.Requested));
   }
 }

@@ -14,7 +14,19 @@ interface IL1ETHBridge {
     address indexed setBy
   );
 
-  event MessageCompleted(
+  /**
+   * @notice Emitted when a bridging is completed.
+   * @param messageId The indexed message id.
+   */
+  event BridgingCompleted(
+    uint256 indexed messageId
+  );
+
+  /**
+   * @notice Emitted when a message is finalized.
+   * @param messageId The indexed message id.
+   */
+  event MessageFinalized(
     uint256 indexed messageId
   );
 
@@ -34,6 +46,9 @@ interface IL1ETHBridge {
   error L1ETHBridge__ZeroAddressNotAllowed();
   error L1ETHBridge__ETHTransferFailed();
   error L1ETHBridge__YieldManagerDepositFailed();
+  error L1ETHBridge__MessageAlreadyFinalized();
+  error L1ETHBridge__InvalidMessageParameters();
+  error L1ETHBridge__WithdrawalClaimFailed();
 
   function setRemoteSender(address _remoteSender) external;
 
