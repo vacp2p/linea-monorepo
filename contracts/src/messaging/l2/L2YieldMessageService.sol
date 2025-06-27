@@ -38,19 +38,26 @@ contract L2YieldMessageService is L2MessageServiceBase {
     );
   }
 
-  function claimMessage(
+  function _claimMessage(
     address _from,
     address _to,
     uint256 _fee,
     uint256 _value,
-    address payable, // _feeRecipient
     bytes calldata _calldata,
     uint256 _nonce
-  ) public override {
+  ) internal override {
     if (_value > 0) {
       revert L2YieldMessageService__InvalidValue();
     }
 
-    _claimMessage(_from, _to, _fee, _value, _calldata, _nonce);
+    super._claimMessage(_from, _to, _fee, _value, _calldata, _nonce);
+  }
+
+  function _sendMessage(address _to, uint256 _fee, bytes calldata _calldata) internal override {
+    if (msg.value > 0) {
+      revert L2YieldMessageService__InvalidValue();
+    }
+
+    super._sendMessage(_to, _fee, _calldata);
   }
 }

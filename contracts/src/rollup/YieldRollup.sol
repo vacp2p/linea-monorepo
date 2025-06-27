@@ -45,11 +45,11 @@ contract YieldRollup is LineaRollupBase {
    * @param _fee The fee for the message.
    * @param _calldata The calldata for the message.
    */
-  function sendMessage(
+  function _sendMessage(
     address _to,
     uint256 _fee,
     bytes calldata _calldata
-  ) public payable override(IMessageService, L1MessageService) {
+  ) internal override {
     if (l1ETHBridge == address(0)) {
       revert YieldRollup__L1ETHBridgeNotSet();
     }
@@ -66,6 +66,6 @@ contract YieldRollup is LineaRollupBase {
       revert YieldRollup__InvalidRecipient();
     }
 
-    _sendMessage(_to, _fee, _calldata);
+    super._sendMessage(_to, _fee, _calldata);
   }
 }
