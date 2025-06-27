@@ -22,5 +22,5 @@ interface IL2ETHBridge {
 
   function setMessageService(address _messageService) external;
 
-  function completeBridge(address _to, uint256 _value, bytes calldata _calldata) external;
+  function completeBridging(address _to, uint256 _value, bytes calldata _calldata) external;
 }

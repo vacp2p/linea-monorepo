@@ -43,5 +43,5 @@ interface IL1ETHBridge {
 
   function bridgeETH(address _to, bytes memory _calldata) external payable;
 
-  function completeBridge(address _to, uint256 _value, bytes calldata _calldata) external;
+  function completeBridging(address _to, uint256 _value, bytes calldata _calldata) external;
 }

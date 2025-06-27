@@ -112,7 +112,7 @@ contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
    * @param _value The amount of ETH to transfer.
    * @param _calldata The calldata to pass to the recipient.
    */
-  function completeBridge(
+  function completeBridging(
     address _to,
     uint256 _value,
     bytes memory _calldata
@@ -137,7 +137,7 @@ contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
       revert L1ETHBridge__YieldManagerDepositFailed();
     }
 
-    bytes memory data = abi.encodeWithSelector(IL2ETHBridge.completeBridge.selector, _to, msg.value, _calldata);
+    bytes memory data = abi.encodeWithSelector(IL2ETHBridge.completeBridging.selector, _to, msg.value, _calldata);
     messageService.sendMessage(remoteSender, 0, data);
   }
 
