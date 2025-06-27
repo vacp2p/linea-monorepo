@@ -7,6 +7,8 @@ contract ETHYieldManagerMock {
     uint256 value;
   }
 
+  uint256 public nextRequestId;
+
   Deposit[] public deposits;
 
   receive() external payable {
@@ -20,5 +22,9 @@ contract ETHYieldManagerMock {
   function lastDeposit() external view returns (Deposit memory) {
     require(deposits.length > 0, "No deposits made");
     return deposits[deposits.length - 1];
+  }
+
+  function requestWithdrawal(uint256 _amount) external returns (uint256 requestId) {
+    return nextRequestId++;
   }
 }

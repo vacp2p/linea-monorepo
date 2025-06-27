@@ -9,15 +9,15 @@ import { IL1ETHBridge } from "./interfaces/IL1ETHBridge.sol";
 import { IL2ETHBridge } from "./interfaces/IL2ETHBridge.sol";
 import { MessageServiceBase } from "../../messaging/MessageServiceBase.sol";
 import { IMessageService } from "../../messaging/interfaces/IMessageService.sol";
+import { IETHYieldManager } from "./interfaces/IETHYieldManager.sol";
 
 contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable, MessageServiceBase {
   /**
    * @notice The completed message struct.
    */
   struct CompletedMessage {
-    address to;
-    uint256 value;
-    bytes callData;
+    uint256 withdrawalRequestId;
+    bytes32 messageHash;
   }
 
   /**
@@ -117,10 +117,11 @@ contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
     uint256 _value,
     bytes memory _calldata
   ) external nonReentrant onlyMessagingService onlyAuthorizedRemoteSender {
-    completedMessages[nextCompletedMessageId] = CompletedMessage(_to, _value, _calldata);
-    nextCompletedMessageId++;
-
     emit MessageCompleted(nextCompletedMessageId);
+    bytes32 hash = keccak256(abi.encode(_to, _value, _calldata));
+    uint256 requestId = IETHYieldManager(yieldManager).requestWithdrawal(_value);
+    completedMessages[nextCompletedMessageId] = CompletedMessage(requestId, hash);
+    nextCompletedMessageId++;
   }
 
   /**
