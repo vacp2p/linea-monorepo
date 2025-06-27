@@ -13,11 +13,21 @@ import { IETHYieldManager } from "./interfaces/IETHYieldManager.sol";
 
 contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable, MessageServiceBase {
   /**
+   * @notice The message status enum.
+   */
+  enum MessageStatus {
+    Unknown,
+    Requested,
+    Finalized
+  }
+
+  /**
    * @notice The completed message struct.
    */
-  struct CompletedMessage {
+  struct Message {
     uint256 withdrawalRequestId;
     bytes32 messageHash;
+    MessageStatus status;
   }
 
   /**
@@ -33,7 +43,7 @@ contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
   /**
    * @notice The completed messages.
    */
-  mapping(uint256 => CompletedMessage) public completedMessages;  
+  mapping(uint256 => Message) public messages;  
 
   /**
    * @dev Ensures the address is not address(0).
@@ -117,10 +127,12 @@ contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
     uint256 _value,
     bytes memory _calldata
   ) external nonReentrant onlyMessagingService onlyAuthorizedRemoteSender {
-    emit MessageCompleted(nextCompletedMessageId);
-    bytes32 hash = keccak256(abi.encode(_to, _value, _calldata));
     uint256 requestId = IETHYieldManager(yieldManager).requestWithdrawal(_value);
-    completedMessages[nextCompletedMessageId] = CompletedMessage(requestId, hash);
+    bytes32 hash = keccak256(abi.encode(_to, _value, _calldata));
+    messages[nextCompletedMessageId] = Message(requestId, hash, MessageStatus.Requested);
+
+    emit BridgingCompleted(nextCompletedMessageId);
+
     nextCompletedMessageId++;
   }
 
@@ -140,6 +152,35 @@ contract L1ETHBridge is IL1ETHBridge, Initializable, UUPSUpgradeable, OwnableUpg
 
     bytes memory data = abi.encodeWithSelector(IL2ETHBridge.completeBridging.selector, _to, msg.value, _calldata);
     messageService.sendMessage(remoteSender, 0, data);
+  }
+
+  function finalizeWithdrawal(uint256 _messageId, uint256 _hintId, address _to, uint256 _value, bytes memory _calldata) external {
+    Message memory message = messages[_messageId];
+    bytes32 hash = keccak256(abi.encode(_to, _value, _calldata));
+
+    if (message.status != MessageStatus.Requested) {
+      revert L1ETHBridge__MessageAlreadyFinalized();
+    }
+
+    if (message.messageHash != hash) {
+      revert L1ETHBridge__InvalidMessageParameters();
+    }
+
+    message.status = MessageStatus.Finalized;
+
+    uint256 balanceBefore = address(this).balance;
+    IETHYieldManager(yieldManager).claimWithdrawal(message.withdrawalRequestId, _hintId);
+    if (address(this).balance != balanceBefore + _value) {
+      revert L1ETHBridge__WithdrawalClaimFailed();
+    }
+
+
+    (bool success, ) = _to.call{ value: _value }(_calldata);
+    if (!success) {
+      revert L1ETHBridge__ETHTransferFailed();
+    }
+
+    emit MessageFinalized(_messageId);
   }
 
   function _authorizeUpgrade(address) internal view override {

@@ -24,7 +24,7 @@ contract ETHYieldManagerMock {
     return deposits[deposits.length - 1];
   }
 
-  function requestWithdrawal(uint256 _amount) external returns (uint256 requestId) {
+  function requestWithdrawal(uint256) external returns (uint256 requestId) {
     return nextRequestId++;
   }
 }
