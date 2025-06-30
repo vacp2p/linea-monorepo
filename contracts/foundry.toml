@@ -20,5 +20,6 @@ additional_compiler_profiles = [ { name = "london", evm_version = "london" } ]
 compilation_restrictions = [
     { paths = "./**/L2MessageService.sol", evm_version = "london" },
     { paths = "./**/L2YieldMessageService.sol", evm_version = "london" },
+    { paths = "./**/L2ETHBridge.sol", evm_version = "london" },
     { paths = "./**/TokenBridge.sol", evm_version = "london" },
 ]

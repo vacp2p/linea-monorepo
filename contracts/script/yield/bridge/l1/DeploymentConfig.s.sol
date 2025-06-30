@@ -9,6 +9,15 @@ contract DeploymentConfig is Script {
   error DeploymentConfig_InvalidDeployerAddress();
   error DeploymentConfig_NoConfigForChain(uint256);
 
+  // solhint-disable-next-line var-name-mixedcase
+  address internal LINEA_ROLLUP_ADDRESS_HOLESKY = 0xA12cc7568d08f848869707996dF47877C506466f;
+
+  // solhint-disable-next-line var-name-mixedcase
+  address internal L2_ETH_BRIDGE_ADDRESS_DEVNET = 0x0000000000000000000000000000000000000001;
+
+  // solhint-disable-next-line var-name-mixedcase
+  address internal YIELD_MANAGER_ADDRESS_HOLESKY = 0xCaF71dEe9d59d0095eC37c1FFa7E4b8fD3114Bc2; // ETHYieldManagerMock
+
   struct NetworkConfig {
     address deployer;
     address messageService;
@@ -25,6 +34,8 @@ contract DeploymentConfig is Script {
     deployer = _broadcaster;
     if (block.chainid == 31_337) {
       activeNetworkConfig = getOrCreateAnvilEthConfig(deployer);
+    } else if (block.chainid == 17_000) {
+      activeNetworkConfig = getOrCreateHoleskyEthConfig(deployer);
     } else {
       revert DeploymentConfig_NoConfigForChain(block.chainid);
     }
@@ -40,6 +51,16 @@ contract DeploymentConfig is Script {
         messageService: address(rollupMock),
         remoteSender: makeAddr("remoteSender"),
         yieldManager: address(yieldManager)
+      });
+  }
+
+  function getOrCreateHoleskyEthConfig(address _deployer) public returns (NetworkConfig memory) {
+    return
+      NetworkConfig({
+        deployer: _deployer,
+        messageService: LINEA_ROLLUP_ADDRESS_HOLESKY,
+        remoteSender: L2_ETH_BRIDGE_ADDRESS_DEVNET,
+        yieldManager: YIELD_MANAGER_ADDRESS_HOLESKY
       });
   }
 
