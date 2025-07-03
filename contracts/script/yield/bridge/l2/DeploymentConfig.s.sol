@@ -19,17 +19,17 @@ contract DeploymentConfig is Script {
   address private deployer;
 
   // solhint-disable-next-line var-name-mixedcase
-  address internal L2_MESSAGE_SERVICE_ADDRESS_DEVNET = 0x630fA6067c817542E85ADC368f188Fc90E4EB5ce;
+  address internal L2_MESSAGE_SERVICE_ADDRESS_DEVNET = 0x1722E194Fc02858243b9b1f59ed2b41202cb4351;
 
   // solhint-disable-next-line var-name-mixedcase
-  address internal L1_ETH_BRIDGE_ADDRESS_DEVNET = 0xF62923E542BdEA2DeC8Da020480197A54c4CE53A;
+  address internal L1_ETH_BRIDGE_ADDRESS_HOODI = 0x0958FAAA350bE3d11C9f9A2BA366af3DAb16C792;
 
   constructor(address _broadcaster) {
     if (_broadcaster == address(0)) revert DeploymentConfig_InvalidDeployerAddress();
     deployer = _broadcaster;
     if (block.chainid == 31_337) {
       activeNetworkConfig = getOrCreateAnvilEthConfig(deployer);
-    } else if (block.chainid == 762355666) {
+    } else if (block.chainid == 1706707152) {
       activeNetworkConfig = getOrCreateStatusDevnetEthConfig(deployer);
     } else {
       revert DeploymentConfig_NoConfigForChain(block.chainid);
@@ -50,7 +50,7 @@ contract DeploymentConfig is Script {
       NetworkConfig({
         deployer: _deployer,
         l2MessageService: L2_MESSAGE_SERVICE_ADDRESS_DEVNET,
-        l1ETHBridge: L1_ETH_BRIDGE_ADDRESS_DEVNET
+        l1ETHBridge: L1_ETH_BRIDGE_ADDRESS_HOODI
       });
   }
 

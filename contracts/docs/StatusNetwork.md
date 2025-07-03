@@ -8,11 +8,11 @@ These are the official contract deployments on the **Holesky** for L1 and Status
 
 | Chain   | Contract                         | Address                                                                                             |
 |---------|----------------------------------|-----------------------------------------------------------------------------------------------------|
-| Holesky       | **Yield Manager**                | [0xcaf71dee9d59d0095ec37c1ffa7e4b8fd3114bc2](https://holesky.etherscan.io/address/0xcaf71dee9d59d0095ec37c1ffa7e4b8fd3114bc2#code)|
-| Holesky       | **L1ETHBridge (Proxy)** | [0xF62923E542BdEA2DeC8Da020480197A54c4CE53A](https://holesky.etherscan.io/address/0xF62923E542BdEA2DeC8Da020480197A54c4CE53A#code)|
-| Holesky       | **L1ETHBridge (Implementation)** | [0x99751ad60328abf73e8c938c0b7a9f9fd370f453](https://holesky.etherscan.io/address/0x99751ad60328abf73e8c938c0b7a9f9fd370f453#code)|
-| Status Devnet | **L2ETHBridge (Proxy)** | [0x99751AD60328ABf73e8c938c0B7A9F9FD370f453](https://pumpi-blockscout.eu-north-2.gateway.fm/address/0x99751AD60328ABf73e8c938c0B7A9F9FD370f453)|
-| Status Devnet | **L2ETHBridge (Implementation)** | [0xCaF71dEe9d59d0095eC37c1FFa7E4b8fD3114Bc2](https://pumpi-blockscout.eu-north-2.gateway.fm/address/0xCaF71dEe9d59d0095eC37c1FFa7E4b8fD3114Bc2)|
+| Hoodi       | **Yield Manager**                | [0xF62923E542BdEA2DeC8Da020480197A54c4CE53A](https://hoodi.etherscan.io/address/0xF62923E542BdEA2DeC8Da020480197A54c4CE53A#code)|
+| Hoodi       | **L1ETHBridge (Proxy)** | [0x0958faaa350be3d11c9f9a2ba366af3dab16c792](https://hoodi.etherscan.io/address/0x0958faaa350be3d11c9f9a2ba366af3dab16c792#code)|
+| Hoodi       | **L1ETHBridge (Implementation)** | [0x968b487d38d93fd5a36aed69da52febcc043c3e7](https://hoodi.etherscan.io/address/0x968b487d38d93fd5a36aed69da52febcc043c3e7#code)|
+| Status Devnet | **L2ETHBridge (Proxy)** | [0x99751AD60328ABf73e8c938c0B7A9F9FD370f453](https://sunti-blockscout.eu-north-2.gateway.fm/address/0x99751AD60328ABf73e8c938c0B7A9F9FD370f453?tab=contract)|
+| Status Devnet | **L2ETHBridge (Implementation)** | [0xCaF71dEe9d59d0095eC37c1FFa7E4b8fD3114Bc2](https://sunti-blockscout.eu-north-2.gateway.fm/address/0xCaF71dEe9d59d0095eC37c1FFa7E4b8fD3114Bc2?tab=contract)|
 
 
 
@@ -27,7 +27,7 @@ export ETH_FROM=0xD631542acd56eeBe466F16CBfEb937637b8b43c1
 
 forge script \
   script/yield/bridge/l1/DeployDummyYieldManager.s.sol \
-  --rpc-url https://ethereum-holesky-rpc.publicnode.com \
+  --rpc-url https://rpc.hoodi.ethpandaops.io \
   --private-key $STATUS_DEVNET_DEPLOYER_KEY \
   --broadcast
 ```
@@ -35,7 +35,7 @@ forge script \
 Verify the contract on Etherscan:
 
 ```bash
-forge verify-contract --chain holesky CONTRACT_ADDRESS ETHYieldManagerMock
+forge verify-contract --chain hoodi CONTRACT_ADDRESS ETHYieldManagerMock
 ```
 
 ### L1ETHBridge
@@ -51,9 +51,15 @@ export ETH_FROM=0xD631542acd56eeBe466F16CBfEb937637b8b43c1
 
 forge script \
   script/yield/bridge/l1/DeployL1ETHBridge.s.sol \
-  --rpc-url https://ethereum-holesky-rpc.publicnode.com \
+  --rpc-url https://rpc.hoodi.ethpandaops.io \
   --private-key $STATUS_DEVNET_DEPLOYER_KEY \
   --broadcast
+```
+
+Verify the implementation contract on Blockscout:
+
+```bash
+forge verify-contract --chain hoodi CONTRACT_ADDRESS L1ETHBridge
 ```
 
 
@@ -67,7 +73,7 @@ export ETH_FROM=0xD631542acd56eeBe466F16CBfEb937637b8b43c1
 
 forge script \
   script/yield/bridge/l2/DeployL2ETHBridge.s.sol \
-  --rpc-url https://pumpi-rpc.eu-north-2.gateway.fm/ \
+  --rpc-url https://sunti-rpc.eu-north-2.gateway.fm/ \
   --private-key $STATUS_DEVNET_DEPLOYER_KEY \
   --broadcast
 ```
@@ -78,8 +84,8 @@ Verify the implementation contract on Blockscout:
 forge verify-contract \
   --verifier blockscout \
   --compilation-profile london \
-  --verifier-url https://pumpi-blockscout.eu-north-2.gateway.fm/api \
-  --chain 762355666 \
+  --verifier-url https://sunti-blockscout.eu-north-2.gateway.fm/api \
+  --chain 1706707152 \
   IMPLEMENTATION_ADDRESS \
   L2ETHBridge
 ```
@@ -90,8 +96,8 @@ Verify the proxy contract in case it hasn't been verified yet automatically by B
 forge verify-contract \
   --verifier blockscout \
   --compilation-profile london \
-  --verifier-url https://pumpi-blockscout.eu-north-2.gateway.fm/api \
-  --chain 762355666 \
+  --verifier-url https://sunti-blockscout.eu-north-2.gateway.fm/api \
+  --chain 1706707152 \
   PROXY_ADDRESS \
   node_modules/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol:ERC1967Proxy
 ```

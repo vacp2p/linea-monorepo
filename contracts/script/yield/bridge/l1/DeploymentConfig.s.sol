@@ -10,13 +10,13 @@ contract DeploymentConfig is Script {
   error DeploymentConfig_NoConfigForChain(uint256);
 
   // solhint-disable-next-line var-name-mixedcase
-  address internal LINEA_ROLLUP_ADDRESS_HOLESKY = 0xA12cc7568d08f848869707996dF47877C506466f;
+  address internal LINEA_ROLLUP_ADDRESS_HOODI = 0x5274A83F118e8E330933c8fa4c1F2746289c8555;
 
   // solhint-disable-next-line var-name-mixedcase
   address internal L2_ETH_BRIDGE_ADDRESS_DEVNET = 0x0000000000000000000000000000000000000001;
 
   // solhint-disable-next-line var-name-mixedcase
-  address internal YIELD_MANAGER_ADDRESS_HOLESKY = 0xCaF71dEe9d59d0095eC37c1FFa7E4b8fD3114Bc2; // ETHYieldManagerMock
+  address internal YIELD_MANAGER_ADDRESS_HOODI = 0xF62923E542BdEA2DeC8Da020480197A54c4CE53A; // ETHYieldManagerMock
 
   struct NetworkConfig {
     address deployer;
@@ -34,8 +34,8 @@ contract DeploymentConfig is Script {
     deployer = _broadcaster;
     if (block.chainid == 31_337) {
       activeNetworkConfig = getOrCreateAnvilEthConfig(deployer);
-    } else if (block.chainid == 17_000) {
-      activeNetworkConfig = getOrCreateHoleskyEthConfig(deployer);
+    } else if (block.chainid == 560048) {
+      activeNetworkConfig = getOrCreateHoodiEthConfig(deployer);
     } else {
       revert DeploymentConfig_NoConfigForChain(block.chainid);
     }
@@ -54,13 +54,13 @@ contract DeploymentConfig is Script {
       });
   }
 
-  function getOrCreateHoleskyEthConfig(address _deployer) public returns (NetworkConfig memory) {
+  function getOrCreateHoodiEthConfig(address _deployer) public returns (NetworkConfig memory) {
     return
       NetworkConfig({
         deployer: _deployer,
-        messageService: LINEA_ROLLUP_ADDRESS_HOLESKY,
+        messageService: LINEA_ROLLUP_ADDRESS_HOODI,
         remoteSender: L2_ETH_BRIDGE_ADDRESS_DEVNET,
-        yieldManager: YIELD_MANAGER_ADDRESS_HOLESKY
+        yieldManager: YIELD_MANAGER_ADDRESS_HOODI
       });
   }
 
